@@ -37,7 +37,7 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Public pages that don't require authentication
-  const publicPages = ['/', '/about'];
+  const publicPages = ['/', '/about', '/contact'];
   const isPublicPage = publicPages.includes(request.nextUrl.pathname);
 
   // Redirect unauthenticated users to login (except for public pages)
