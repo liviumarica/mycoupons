@@ -6,6 +6,7 @@ export * from './card';
 export * from './badge';
 export * from './label';
 export * from './select';
+export * from './skeleton';
 export * from './switch';
 
 // Form components

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, DragEvent } from 'react';
+import Image from 'next/image';
 import { Button, Card } from '@coupon-management/ui';
 
 interface ImageUploaderProps {
@@ -167,11 +168,15 @@ export default function ImageUploader({
       ) : (
         <Card className="p-4">
           <div className="space-y-4">
-            <div className="relative">
-              <img
+            <div className="relative w-full" style={{ minHeight: '200px' }}>
+              <Image
                 src={preview}
                 alt="Preview"
+                width={800}
+                height={600}
                 className="w-full h-auto max-h-96 object-contain rounded-lg"
+                style={{ width: '100%', height: 'auto' }}
+                priority
               />
             </div>
 

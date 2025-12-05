@@ -34,8 +34,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Update notification log status
-    const { error: updateError } = await supabase
-      .from('notification_logs')
+    const { error: updateError } = await (supabase
+      .from('notification_logs') as any)
       .update({ status: 'clicked' })
       .eq('id', notificationLogId)
       .eq('user_id', user.id); // Ensure user owns this notification log

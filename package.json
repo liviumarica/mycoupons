@@ -7,7 +7,13 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
-    "type-check": "turbo run type-check"
+    "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
+    "type-check": "turbo run type-check",
+    "test": "turbo run test",
+    "test:ui": "pnpm --filter @coupon-management/ui test",
+    "test:rls": "pnpm --filter @coupon-management/supabase test",
+    "validate-env": "node scripts/validate-env.js",
+    "predeploy": "pnpm validate-env && pnpm type-check && pnpm lint"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

@@ -10,6 +10,7 @@ import {
   Button,
 } from '@coupon-management/ui';
 import { Filter, X, ArrowUpDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface FilterBarProps {
   filters: FilterState;
@@ -38,7 +39,12 @@ export default function FilterBar({ filters, onFilterChange, merchants }: Filter
   };
 
   return (
-    <div className="space-y-4">
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-4"
+    >
       {/* Filter Controls */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
@@ -104,17 +110,26 @@ export default function FilterBar({ filters, onFilterChange, merchants }: Filter
         </div>
 
         {/* Clear Filters Button */}
-        {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearFilters}
-            className="text-gray-600 hover:text-gray-900"
-          >
-            <X className="mr-1 h-4 w-4" />
-            Clear Filters
-          </Button>
-        )}
+        <AnimatePresence>
+          {hasActiveFilters && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <X className="mr-1 h-4 w-4" />
+                Clear Filters
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Sort Controls */}
@@ -157,6 +172,6 @@ export default function FilterBar({ filters, onFilterChange, merchants }: Filter
           </Select>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

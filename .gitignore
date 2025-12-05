@@ -25,6 +25,7 @@ yarn-error.log*
 # Local env files
 .env*.local
 .env
+.env.production
 
 # Vercel
 .vercel
@@ -35,6 +36,13 @@ next-env.d.ts
 
 # Turbo
 .turbo
-apps/web/.env.example
-apps/web/scripts/generate-vapid-keys.js
-apps/web/src/app/(dashboard)/add-coupon/ExtractionReview.tsx
+
+# Supabase
+.supabase/
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# OS
+Thumbs.db

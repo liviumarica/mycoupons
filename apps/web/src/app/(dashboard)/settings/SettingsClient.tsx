@@ -39,6 +39,7 @@ export default function SettingsClient() {
   useEffect(() => {
     loadPreferences();
     checkNotificationPermission();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkNotificationPermission = () => {
@@ -51,11 +52,20 @@ export default function SettingsClient() {
 
   const loadPreferences = async () => {
     try {
-      const response = await fetch('/api/reminders');
-      if (!response.ok) {
-        throw new Error('Failed to load preferences');
+      const { fetchWithRetry, isOnline } = await import('@/lib/api-client');
+      
+      // Check if user is online
+      if (!isOnline()) {
+        throw new Error('You are offline. Please check your internet connection.');
       }
-      const data = await response.json();
+
+      const result = await fetchWithRetry('/api/reminders');
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to load preferences');
+      }
+      
+      const data = result.data || result;
       setPreferences({
         remind_7_days: data.remind_7_days ?? true,
         remind_3_days: data.remind_3_days ?? true,
@@ -63,9 +73,10 @@ export default function SettingsClient() {
       });
     } catch (error) {
       console.error('Error loading preferences:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load reminder preferences';
       toast({
         title: 'Error',
-        description: 'Failed to load reminder preferences',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -136,7 +147,14 @@ export default function SettingsClient() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const response = await fetch('/api/reminders', {
+      const { fetchWithRetry, isOnline } = await import('@/lib/api-client');
+      
+      // Check if user is online
+      if (!isOnline()) {
+        throw new Error('You are offline. Please check your internet connection.');
+      }
+
+      const result = await fetchWithRetry('/api/reminders', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -144,8 +162,8 @@ export default function SettingsClient() {
         body: JSON.stringify(preferences),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to save preferences');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save preferences');
       }
 
       toast({
@@ -154,9 +172,10 @@ export default function SettingsClient() {
       });
     } catch (error) {
       console.error('Error saving preferences:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save reminder preferences';
       toast({
         title: 'Error',
-        description: 'Failed to save reminder preferences',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

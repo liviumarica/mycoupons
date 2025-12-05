@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import type { Coupon, ReminderPreferences } from '@coupon-management/core';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DbClient = SupabaseClient<any>;
 
 // Helper to convert database row to Coupon type
@@ -114,6 +115,7 @@ export const couponQueries = {
     const insertData = couponToDbInsert(coupon);
     const { data, error } = await client
       .from('coupons')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .insert(insertData as any)
       .select()
       .single();
@@ -134,6 +136,7 @@ export const couponQueries = {
     userId: string,
     updates: Partial<Omit<Coupon, 'id' | 'userId' | 'createdAt' | 'updatedAt'>>
   ): Promise<{ data: Coupon | null; error: Error | null }> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dbUpdates: any = {};
 
     if (updates.merchant !== undefined) dbUpdates.merchant = updates.merchant;
@@ -155,7 +158,6 @@ export const couponQueries = {
 
     dbUpdates.updated_at = new Date().toISOString();
 
-    // @ts-ignore - Supabase type inference issue with dynamic updates
     const { data, error } = await client
       .from('coupons')
       .update(dbUpdates)
@@ -265,6 +267,7 @@ export const reminderQueries = {
       remind1Day: boolean;
     }
   ): Promise<{ data: ReminderPreferences | null; error: Error | null }> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const upsertData: any = {
       user_id: userId,
       remind_7_days: preferences.remind7Days,
@@ -429,5 +432,138 @@ export const pushSubscriptionQueries = {
     }
 
     return { exists: !!data, error: null };
+  },
+};
+
+// Notification Logs Query Helpers
+export const notificationLogQueries = {
+  /**
+   * Delete all notification logs for a user
+   */
+  async deleteAllUserNotificationLogs(
+    client: DbClient,
+    userId: string
+  ): Promise<{ error: Error | null }> {
+    const { error } = await client
+      .from('notification_logs')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      return { error: new Error(error.message) };
+    }
+
+    return { error: null };
+  },
+};
+
+// User Account Query Helpers
+export const userAccountQueries = {
+  /**
+   * Delete all user data (coupons, images, preferences, subscriptions, logs)
+   * This is a cascade delete operation for account deletion
+   */
+  async deleteUserAccount(
+    client: DbClient,
+    userId: string
+  ): Promise<{ error: Error | null; details?: string }> {
+    try {
+      // 1. Get all coupons with images to delete from storage
+      const { data: coupons, error: couponsError } = await client
+        .from('coupons')
+        .select('image_url')
+        .eq('user_id', userId);
+
+      if (couponsError) {
+        return {
+          error: new Error(`Failed to fetch user coupons: ${couponsError.message}`),
+        };
+      }
+
+      // 2. Delete images from storage
+      const imageUrls = coupons
+        ?.filter((c) => c.image_url)
+        .map((c) => c.image_url as string) || [];
+
+      if (imageUrls.length > 0) {
+        // Extract file paths from URLs
+        const filePaths = imageUrls.map((url) => {
+          const urlObj = new URL(url);
+          const pathParts = urlObj.pathname.split('/');
+          // Path format: /storage/v1/object/public/coupon-images/{userId}/{filename}
+          const userIdIndex = pathParts.indexOf(userId);
+          if (userIdIndex !== -1 && userIdIndex < pathParts.length - 1) {
+            return `${userId}/${pathParts[userIdIndex + 1]}`;
+          }
+          return null;
+        }).filter(Boolean) as string[];
+
+        if (filePaths.length > 0) {
+          const { error: storageError } = await client.storage
+            .from('coupon-images')
+            .remove(filePaths);
+
+          if (storageError) {
+            console.error('Storage deletion error:', storageError);
+            // Continue with database deletion even if storage fails
+          }
+        }
+      }
+
+      // 3. Delete notification logs
+      const { error: logsError } = await notificationLogQueries.deleteAllUserNotificationLogs(
+        client,
+        userId
+      );
+
+      if (logsError) {
+        return {
+          error: new Error(`Failed to delete notification logs: ${logsError.message}`),
+        };
+      }
+
+      // 4. Delete push subscriptions
+      const { error: subsError } = await pushSubscriptionQueries.deleteAllUserPushSubscriptions(
+        client,
+        userId
+      );
+
+      if (subsError) {
+        return {
+          error: new Error(`Failed to delete push subscriptions: ${subsError.message}`),
+        };
+      }
+
+      // 5. Delete reminder preferences
+      const { error: prefsError } = await reminderQueries.deleteReminderPreferences(
+        client,
+        userId
+      );
+
+      if (prefsError) {
+        return {
+          error: new Error(`Failed to delete reminder preferences: ${prefsError.message}`),
+        };
+      }
+
+      // 6. Delete all coupons (this will cascade to related data)
+      const { error: deleteCouponsError } = await client
+        .from('coupons')
+        .delete()
+        .eq('user_id', userId);
+
+      if (deleteCouponsError) {
+        return {
+          error: new Error(`Failed to delete coupons: ${deleteCouponsError.message}`),
+        };
+      }
+
+      return { error: null };
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error : new Error('Unknown error during account deletion'),
+        details: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
   },
 };

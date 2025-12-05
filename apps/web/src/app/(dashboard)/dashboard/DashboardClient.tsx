@@ -2,15 +2,17 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useToast, Toaster, Button } from '@coupon-management/ui';
+import { useToast, Button, Skeleton } from '@coupon-management/ui';
 import { Coupon, FilterState, applyFiltersAndSort } from '@coupon-management/core';
 import CouponCard from '@/components/CouponCard';
 import FilterBar from '@/components/FilterBar';
-import { Plus, Loader2, Settings } from 'lucide-react';
+import Pagination from '@/components/Pagination';
+import { Plus, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const FILTER_STORAGE_KEY = 'coupon-filters';
+const ITEMS_PER_PAGE = 12;
 
 function SuccessHandler() {
   const searchParams = useSearchParams();
@@ -68,6 +70,7 @@ export default function DashboardClient() {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>(loadFiltersFromStorage);
   const [highlightedCouponId, setHighlightedCouponId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
@@ -110,20 +113,31 @@ export default function DashboardClient() {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch('/api/coupons');
-      const result = await response.json();
+      const { fetchWithRetry, isOnline } = await import('@/lib/api-client');
+      
+      // Check if user is online
+      if (!isOnline()) {
+        throw new Error('You are offline. Please check your internet connection.');
+      }
 
-      if (!response.ok || !result.success) {
+      // Use cache for GET requests with 2 minute TTL
+      const result = await fetchWithRetry('/api/coupons', {}, {
+        useCache: true,
+        cacheTTL: 2 * 60 * 1000, // 2 minutes
+      });
+
+      if (!result.success) {
         throw new Error(result.error || 'Failed to fetch coupons');
       }
 
       setCoupons(result.data);
     } catch (err) {
       console.error('Error fetching coupons:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load coupons');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load coupons';
+      setError(errorMessage);
       toast({
         title: 'Error',
-        description: 'Failed to load your coupons. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -133,15 +147,23 @@ export default function DashboardClient() {
 
   const handleDelete = async (couponId: string) => {
     try {
-      const response = await fetch(`/api/coupons/${couponId}`, {
+      const { fetchWithRetry, isOnline, invalidateApiCache } = await import('@/lib/api-client');
+      
+      // Check if user is online
+      if (!isOnline()) {
+        throw new Error('You are offline. Please check your internet connection.');
+      }
+
+      const result = await fetchWithRetry(`/api/coupons/${couponId}`, {
         method: 'DELETE',
       });
 
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
+      if (!result.success) {
         throw new Error(result.error || 'Failed to delete coupon');
       }
+
+      // Invalidate coupons cache
+      invalidateApiCache('api:/api/coupons');
 
       // Remove coupon from state
       setCoupons((prev) => prev.filter((c) => c.id !== couponId));
@@ -152,9 +174,10 @@ export default function DashboardClient() {
       });
     } catch (err) {
       console.error('Error deleting coupon:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete coupon';
       toast({
         title: 'Error',
-        description: 'Failed to delete coupon. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
@@ -162,6 +185,7 @@ export default function DashboardClient() {
 
   const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
   };
 
   // Get unique merchants for filter dropdown
@@ -175,10 +199,22 @@ export default function DashboardClient() {
     return applyFiltersAndSort(coupons, filters);
   }, [coupons, filters]);
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredAndSortedCoupons.length / ITEMS_PER_PAGE);
+  const paginatedCoupons = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredAndSortedCoupons.slice(startIndex, endIndex);
+  }, [filteredAndSortedCoupons, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <>
       <SuccessHandler />
-      <Toaster />
 
       <div className="space-y-6">
         {/* Header */}
@@ -206,11 +242,33 @@ export default function DashboardClient() {
           </div>
         </div>
 
-        {/* Loading State */}
+        {/* Loading State with Skeletons */}
         {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-6"
+          >
+            {/* Filter Bar Skeleton */}
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <Skeleton className="h-9 w-32" />
+                <Skeleton className="h-9 w-48" />
+                <Skeleton className="h-9 w-48" />
+                <Skeleton className="h-9 w-48" />
+              </div>
+            </div>
+            
+            {/* Coupon Cards Skeleton */}
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="space-y-3">
+                  <Skeleton className="h-48 w-full rounded-lg" />
+                </div>
+              ))}
+            </div>
+          </motion.div>
         )}
 
         {/* Error State */}
@@ -307,30 +365,43 @@ export default function DashboardClient() {
           !error &&
           coupons.length > 0 &&
           filteredAndSortedCoupons.length > 0 && (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              <AnimatePresence mode="popLayout">
-                {filteredAndSortedCoupons.map((coupon) => (
-                  <motion.div
-                    key={coupon.id}
-                    id={`coupon-${coupon.id}`}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ 
-                      opacity: 1, 
-                      scale: 1,
-                      ...(highlightedCouponId === coupon.id && {
-                        boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.5)',
-                        borderRadius: '0.5rem',
-                      })
-                    }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <CouponCard coupon={coupon} onDelete={handleDelete} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
+            <>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <AnimatePresence mode="popLayout">
+                  {paginatedCoupons.map((coupon) => (
+                    <motion.div
+                      key={coupon.id}
+                      id={`coupon-${coupon.id}`}
+                      layout
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ 
+                        opacity: 1, 
+                        scale: 1,
+                        ...(highlightedCouponId === coupon.id && {
+                          boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.5)',
+                          borderRadius: '0.5rem',
+                        })
+                      }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <CouponCard coupon={coupon} onDelete={handleDelete} />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  totalItems={filteredAndSortedCoupons.length}
+                />
+              )}
+            </>
           )}
       </div>
     </>

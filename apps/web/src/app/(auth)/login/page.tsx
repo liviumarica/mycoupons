@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -51,8 +52,17 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md space-y-8"
+      >
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
             Sign in to your account
           </h2>
@@ -60,16 +70,25 @@ export default function LoginPage() {
             Or{' '}
             <Link
               href="/signup"
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
             >
               create a new account
             </Link>
           </p>
-        </div>
+        </motion.div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+        <motion.form
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="mt-8 space-y-6"
+          onSubmit={handleLogin}
+        >
           <div className="-space-y-px rounded-md shadow-sm">
-            <div>
+            <motion.div
+              whileFocus={{ scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+            >
               <label htmlFor="email-address" className="sr-only">
                 Email address
               </label>
@@ -81,40 +100,52 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="relative block w-full rounded-md border-0 px-3 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                className="relative block w-full rounded-md border-0 px-3 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all"
                 placeholder="Email address"
                 disabled={loading}
               />
-            </div>
+            </motion.div>
           </div>
 
-          {message && (
-            <div
-              className={`rounded-md p-4 ${
-                message.type === 'success'
-                  ? 'bg-green-50 text-green-800'
-                  : 'bg-red-50 text-red-800'
-              }`}
-            >
-              <p className="text-sm">{message.text}</p>
-            </div>
-          )}
+          <AnimatePresence mode="wait">
+            {message && (
+              <motion.div
+                key={message.type}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className={`rounded-md p-4 ${
+                  message.type === 'success'
+                    ? 'bg-green-50 text-green-800'
+                    : 'bg-red-50 text-red-800'
+                }`}
+              >
+                <p className="text-sm">{message.text}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          <div>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <button
               type="submit"
               disabled={loading}
-              className="group relative flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Sending magic link...' : 'Send magic link'}
             </button>
-          </div>
-        </form>
+          </motion.div>
+        </motion.form>
 
-        <div className="text-center text-sm text-gray-600">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="text-center text-sm text-gray-600"
+        >
           <p>We&apos;ll send you a magic link to sign in without a password.</p>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

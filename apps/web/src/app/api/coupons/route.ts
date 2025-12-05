@@ -129,10 +129,18 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      data: coupons || [],
-    });
+    // Return with cache headers for better performance
+    return NextResponse.json(
+      {
+        success: true,
+        data: coupons || [],
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+        },
+      }
+    );
   } catch (error) {
     console.error('Error retrieving coupons:', error);
     return NextResponse.json(

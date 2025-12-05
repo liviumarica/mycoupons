@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from '@coupon-management/ui';
 import { Trash2, Copy, Calendar } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface CouponCardProps {
   coupon: Coupon;
@@ -81,51 +82,74 @@ export default function CouponCard({ coupon, onDelete }: CouponCardProps) {
 
   return (
     <>
-      <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-200">
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-lg font-semibold text-gray-900">
-                {coupon.merchant}
-              </CardTitle>
-              <CardDescription className="mt-1 text-sm text-gray-600">
-                {coupon.title}
-              </CardDescription>
+      <motion.div
+        whileHover={{ y: -4, transition: { duration: 0.2 } }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-200">
+          <CardHeader>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <CardTitle className="text-lg font-semibold text-gray-900">
+                  {coupon.merchant}
+                </CardTitle>
+                <CardDescription className="mt-1 text-sm text-gray-600">
+                  {coupon.title}
+                </CardDescription>
+              </div>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+              >
+                <Badge
+                  variant={
+                    isExpired
+                      ? 'destructive'
+                      : isExpiringSoon
+                        ? 'default'
+                        : 'secondary'
+                  }
+                  className="ml-2"
+                >
+                  {formatDiscount()}
+                </Badge>
+              </motion.div>
             </div>
-            <Badge
-              variant={
-                isExpired
-                  ? 'destructive'
-                  : isExpiringSoon
-                    ? 'default'
-                    : 'secondary'
-              }
-              className="ml-2"
-            >
-              {formatDiscount()}
-            </Badge>
-          </div>
-        </CardHeader>
+          </CardHeader>
 
         <CardContent className="flex-1">
           {/* Coupon Code */}
           <div className="mb-4">
-            <div className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2">
+            <motion.div
+              className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
               <code className="text-sm font-mono font-semibold text-gray-900">
                 {coupon.code}
               </code>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCopyCode}
-                className="h-8 w-8 p-0"
-              >
-                <Copy className="h-4 w-4" />
-                <span className="sr-only">Copy code</span>
-              </Button>
-            </div>
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopyCode}
+                  className="h-8 w-8 p-0"
+                >
+                  <Copy className="h-4 w-4" />
+                  <span className="sr-only">Copy code</span>
+                </Button>
+              </motion.div>
+            </motion.div>
             {copied && (
-              <p className="mt-1 text-xs text-green-600">Copied to clipboard!</p>
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mt-1 text-xs text-green-600"
+              >
+                Copied to clipboard!
+              </motion.p>
             )}
           </div>
 
@@ -152,17 +176,20 @@ export default function CouponCard({ coupon, onDelete }: CouponCardProps) {
         </CardContent>
 
         <CardFooter className="border-t pt-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowDeleteDialog(true)}
-            className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
+          <motion.div className="w-full" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowDeleteDialog(true)}
+              className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </Button>
+          </motion.div>
         </CardFooter>
       </Card>
+      </motion.div>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

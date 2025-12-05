@@ -125,3 +125,40 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 ## Type Safety
 
 All query helpers return typed responses that match the core domain types from `@coupon-management/core`. Database rows are automatically converted to the appropriate TypeScript types with proper date handling.
+
+## Testing
+
+This package includes comprehensive Row Level Security (RLS) policy tests that verify data isolation and security requirements.
+
+### Running RLS Tests
+
+**Prerequisites:**
+- Set `SUPABASE_SERVICE_ROLE_KEY` environment variable
+- Ensure test users exist in your Supabase project
+
+**Run tests:**
+
+```bash
+# From the root of the monorepo
+pnpm --filter @coupon-management/supabase test
+
+# Or use the helper script (Windows)
+cd packages/supabase
+.\run-rls-tests.ps1
+
+# Or use the helper script (macOS/Linux)
+cd packages/supabase
+./run-rls-tests.sh
+```
+
+For detailed setup instructions and troubleshooting, see [RLS_TESTING_GUIDE.md](./RLS_TESTING_GUIDE.md).
+
+### What the Tests Verify
+
+- ✅ Users can only access their own coupons (Requirement 9.1)
+- ✅ Authentication tokens are validated (Requirement 9.2)
+- ✅ Storage RLS policies prevent unauthorized access (Requirement 9.4)
+- ✅ User isolation across all database tables
+- ✅ Proper enforcement of data ownership
+
+**Total: 19 comprehensive RLS policy tests**
