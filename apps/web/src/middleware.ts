@@ -36,10 +36,14 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Public pages that don't require authentication
+  const publicPages = ['/', '/about'];
+  const isPublicPage = publicPages.includes(request.nextUrl.pathname);
+
   // Redirect unauthenticated users to login (except for public pages)
   if (
     !user &&
-    request.nextUrl.pathname !== '/' &&
+    !isPublicPage &&
     !request.nextUrl.pathname.startsWith('/login') &&
     !request.nextUrl.pathname.startsWith('/signup') &&
     !request.nextUrl.pathname.startsWith('/auth')
