@@ -48,3 +48,4 @@ next-env.d.ts
 Thumbs.db
 .kiro/settings/mcp.json
 .kiro/settings/mcp.json
+*.json
