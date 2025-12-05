@@ -46,3 +46,5 @@ next-env.d.ts
 
 # OS
 Thumbs.db
+.kiro/settings/mcp.json
+.kiro/settings/mcp.json
