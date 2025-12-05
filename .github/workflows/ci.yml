@@ -91,7 +91,7 @@ jobs:
         run: pnpm build
         env:
           # Use dummy values for build-time environment variables
-          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_URL: https://fonwcqxjwuubnuaavgyr.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4YW1wbGUiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MjU0MjQwMCwiZXhwIjoxOTU4MTE4NDAwfQ.example
           NEXT_PUBLIC_VAPID_PUBLIC_KEY: BExampleVapidPublicKey
       
