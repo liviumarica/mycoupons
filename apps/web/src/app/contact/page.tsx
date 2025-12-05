@@ -12,7 +12,7 @@ const contactMethods = [
     icon: Mail,
     title: 'Email',
     description: 'Our team will respond within 24 hours',
-    contact: 'support@couponai.com',
+    contact: 'contact@couponai.com',
     gradient: 'from-blue-500 to-cyan-500',
   },
   {
