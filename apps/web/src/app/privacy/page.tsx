@@ -153,7 +153,7 @@ export default function PrivacyPage() {
               transition={{ delay: 0.4, duration: 0.6 }}
               className="text-xl text-gray-600 mb-8"
             >
-              We're committed to protecting your personal information and being transparent about how we use it.
+              We&apos;re committed to protecting your personal information and being transparent about how we use it.
             </motion.p>
 
             <motion.div
@@ -289,7 +289,7 @@ export default function PrivacyPage() {
               transition={{ duration: 0.6 }}
               className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100"
             >
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Children's Privacy</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Children&apos;s Privacy</h2>
               <p className="text-gray-600 leading-relaxed">
                 Our service is not intended for children under 13 years of age. We do not knowingly 
                 collect personal information from children under 13. If you are a parent or guardian 
@@ -316,7 +316,7 @@ export default function PrivacyPage() {
                 or for legal, operational, or regulatory reasons. When we make changes, we will:
               </p>
               <ul className="list-disc list-inside space-y-2 ml-4 text-gray-600">
-                <li>Update the "Last updated" date at the top of this page</li>
+                <li>Update the &quot;Last updated&quot; date at the top of this page</li>
                 <li>Notify you via email if the changes are significant</li>
                 <li>Post a notice on our website for 30 days</li>
               </ul>
@@ -342,7 +342,7 @@ export default function PrivacyPage() {
               <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-12 text-center text-white">
                 <h2 className="text-3xl font-bold mb-4">Questions About Privacy?</h2>
                 <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
-                  If you have any questions or concerns about our Privacy Policy, we're here to help.
+                  If you have any questions or concerns about our Privacy Policy, we&apos;re here to help.
                 </p>
                 <Link
                   href="/contact"

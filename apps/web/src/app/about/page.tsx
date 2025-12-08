@@ -83,7 +83,7 @@ export default function AboutPage() {
               className="text-xl text-gray-600 mb-12 leading-relaxed"
             >
               We believe everyone deserves to save money without the hassle of managing countless coupons. 
-              That's why we built CouponAI - an intelligent platform that uses artificial intelligence to 
+              That&apos;s why we built CouponAI - an intelligent platform that uses artificial intelligence to 
               help you organize, track, and never miss a discount again.
             </motion.p>
           </div>
@@ -145,11 +145,11 @@ export default function AboutPage() {
               <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 space-y-6 text-gray-700">
                 <p className="text-lg leading-relaxed">
                   CouponAI was born from a simple frustration: losing money on expired coupons. 
-                  We've all been there - finding a great discount code, saving it somewhere, and 
-                  then forgetting about it until it's too late.
+                  We&apos;ve all been there - finding a great discount code, saving it somewhere, and 
+                  then forgetting about it until it&apos;s too late.
                 </p>
                 <p className="text-lg leading-relaxed">
-                  We realized that managing coupons shouldn't be a chore. With advances in AI and 
+                  We realized that managing coupons shouldn&apos;t be a chore. With advances in AI and 
                   machine learning, we saw an opportunity to build something that would make saving 
                   money effortless and automatic.
                 </p>
