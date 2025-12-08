@@ -1,5 +1,9 @@
 # Vercel Deployment Fix
 
+## Current Status
+
+The build works locally but fails on Vercel with module resolution errors. This appears to be a webpack/Next.js path resolution issue in the Vercel build environment.
+
 ## Issues Fixed
 
 ### 1. Environment Variable Configuration
@@ -86,8 +90,76 @@ After deployment, verify:
 - [ ] Authentication works correctly
 - [ ] All pages load without errors
 
+## Additional Configuration Changes
+
+### 4. TypeScript Configuration
+Added `baseUrl` to `apps/web/tsconfig.json` for better path resolution:
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+### 5. Webpack Configuration
+Added explicit webpack configuration in `next.config.js` for better module resolution:
+```javascript
+webpack: (config, { isServer }) => {
+  config.resolve.extensionAlias = {
+    '.js': ['.ts', '.tsx', '.js', '.jsx'],
+    '.mjs': ['.mts', '.mjs'],
+    '.cjs': ['.cts', '.cjs'],
+  };
+  return config;
+}
+```
+
+### 6. pnpm Configuration
+Created `.npmrc` file at the root with:
+```
+shamefully-hoist=true
+strict-peer-dependencies=false
+auto-install-peers=true
+```
+
+### 7. Vercel Build Command
+Updated to use frozen lockfile:
+```json
+"buildCommand": "cd ../.. && pnpm install --frozen-lockfile && pnpm build --filter=web"
+```
+
+## Troubleshooting
+
+If the build still fails on Vercel, try these steps:
+
+1. **Clear Vercel Build Cache**
+   - Go to Vercel Dashboard → Settings → General
+   - Scroll to "Build & Development Settings"
+   - Clear the build cache
+
+2. **Check Environment Variables**
+   - Ensure `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` is set in Vercel
+   - Verify all required environment variables are present
+
+3. **Verify Node Version**
+   - Check that Vercel is using Node 18+ (required for Next.js 15)
+   - Set in vercel.json or project settings if needed
+
+4. **Check Build Logs**
+   - Look for any pnpm workspace resolution errors
+   - Verify that all workspace packages are being found
+
+5. **Try Manual Deployment**
+   - Use Vercel CLI: `vercel --prod`
+   - This can help identify environment-specific issues
+
 ## Notes
 
 - The code now follows the official Supabase SSR implementation guide
 - Both `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are supported for compatibility
 - Local build passes successfully with these changes
+- The module resolution issue appears to be specific to Vercel's build environment
