@@ -1,10 +1,12 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { LandingHeader } from '@/components/landing/landing-header';
-import { LandingFooter } from '@/components/landing/landing-footer';
 import { Sparkles, Target, Users, Zap, Heart, Shield } from 'lucide-react';
+
+const LandingHeader = dynamic(() => import('@/components/landing/landing-header').then(mod => ({ default: mod.LandingHeader })), { ssr: false });
+const LandingFooter = dynamic(() => import('@/components/landing/landing-footer').then(mod => ({ default: mod.LandingFooter })), { ssr: false });
 
 const values = [
   {
