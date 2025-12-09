@@ -17,7 +17,10 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
     // Fetch reminder preferences
@@ -31,23 +34,26 @@ export async function GET() {
       // If no preferences exist yet, return defaults
       if (error.code === 'PGRST116') {
         return NextResponse.json({
-          remind_7_days: true,
-          remind_3_days: true,
-          remind_1_day: true,
+          success: true,
+          data: {
+            remind_7_days: true,
+            remind_3_days: true,
+            remind_1_day: true,
+          },
         });
       }
       console.error('Error fetching reminder preferences:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch preferences' },
+        { success: false, error: 'Failed to fetch preferences' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(preferences);
+    return NextResponse.json({ success: true, data: preferences });
   } catch (error) {
     console.error('Unexpected error in GET /api/reminders:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -68,7 +74,10 @@ export async function PUT(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
     // Parse request body
@@ -82,7 +91,7 @@ export async function PUT(request: Request) {
       typeof remind_1_day !== 'boolean'
     ) {
       return NextResponse.json(
-        { error: 'Invalid preference values' },
+        { success: false, error: 'Invalid preference values' },
         { status: 400 }
       );
     }
@@ -113,7 +122,7 @@ export async function PUT(request: Request) {
       if (error) {
         console.error('Error updating reminder preferences:', error);
         return NextResponse.json(
-          { error: 'Failed to update preferences' },
+          { success: false, error: 'Failed to update preferences' },
           { status: 500 }
         );
       }
@@ -134,18 +143,18 @@ export async function PUT(request: Request) {
       if (error) {
         console.error('Error creating reminder preferences:', error);
         return NextResponse.json(
-          { error: 'Failed to create preferences' },
+          { success: false, error: 'Failed to create preferences' },
           { status: 500 }
         );
       }
       result = data;
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({ success: true, data: result });
   } catch (error) {
     console.error('Unexpected error in PUT /api/reminders:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }

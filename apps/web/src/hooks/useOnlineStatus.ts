@@ -7,11 +7,13 @@ import { useEffect, useState } from 'react';
  * Returns true if online, false if offline
  */
 export function useOnlineStatus(): boolean {
-  const [isOnline, setIsOnline] = useState<boolean>(
-    typeof navigator !== 'undefined' ? navigator.onLine : true
-  );
+  const [isOnline, setIsOnline] = useState<boolean>(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    setIsOnline(navigator.onLine);
+
     function handleOnline() {
       setIsOnline(true);
     }
@@ -28,6 +30,11 @@ export function useOnlineStatus(): boolean {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  // During SSR and initial render, always return true to match server
+  if (!mounted) {
+    return true;
+  }
 
   return isOnline;
 }
