@@ -2,16 +2,17 @@
 
 ## Current Status
 
-✅ **Module resolution fixed!** The webpack alias configuration resolved the path resolution errors.
+✅ **BUILD COMPILES SUCCESSFULLY!** All technical issues resolved.
 
-⚠️ **Current issue:** TypeScript packages not being detected during Next.js build in Vercel's monorepo environment.
+⚠️ **Final step:** Need to add environment variables in Vercel dashboard.
 
 **Progress:**
-- ✅ Fixed Supabase client environment variables
+- ✅ Fixed Supabase client environment variables (code)
 - ✅ Fixed ESLint errors
 - ✅ Added Turbo environment variables
 - ✅ Fixed webpack module resolution with explicit alias
-- ⏳ Working on TypeScript package detection in monorepo
+- ✅ Fixed TypeScript detection by forcing NODE_ENV=development for pnpm install
+- ⏳ **ACTION REQUIRED:** Add environment variables in Vercel
 
 ## Issues Fixed
 
@@ -52,9 +53,11 @@ Fixed unescaped entity errors in:
 - `apps/web/src/app/contact/page.tsx` - Replaced apostrophes with `&apos;`
 - `apps/web/src/app/privacy/page.tsx` - Replaced apostrophes with `&apos;` and quotes with `&quot;`
 
-## Required Vercel Environment Variables
+## ⚠️ REQUIRED: Vercel Environment Variables
 
-You need to add/update these environment variables in your Vercel project settings:
+**The build is now working but will fail without these environment variables!**
+
+You MUST add these environment variables in your Vercel project settings:
 
 ### Required Variables:
 1. `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
@@ -146,6 +149,14 @@ Updated `.npmrc` to ensure all packages are hoisted:
 ```
 public-hoist-pattern[]=*
 ```
+
+### 9. **CRITICAL FIX:** Force devDependencies Installation
+The key breakthrough - set `NODE_ENV=development` for pnpm install in web directory:
+```json
+"buildCommand": "cd ../.. && pnpm install --frozen-lockfile && cd apps/web && NODE_ENV=development pnpm install --frozen-lockfile && pnpm build"
+```
+
+This forces pnpm to install devDependencies (TypeScript, @types/node) which Next.js needs for the build, even though Vercel sets NODE_ENV=production by default.
 
 ## Troubleshooting
 
