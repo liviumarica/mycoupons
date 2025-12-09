@@ -2,7 +2,16 @@
 
 ## Current Status
 
-The build works locally but fails on Vercel with module resolution errors. This appears to be a webpack/Next.js path resolution issue in the Vercel build environment.
+✅ **Module resolution fixed!** The webpack alias configuration resolved the path resolution errors.
+
+⚠️ **Current issue:** TypeScript packages not being detected during Next.js build in Vercel's monorepo environment.
+
+**Progress:**
+- ✅ Fixed Supabase client environment variables
+- ✅ Fixed ESLint errors
+- ✅ Added Turbo environment variables
+- ✅ Fixed webpack module resolution with explicit alias
+- ⏳ Working on TypeScript package detection in monorepo
 
 ## Issues Fixed
 
@@ -127,9 +136,15 @@ auto-install-peers=true
 ```
 
 ### 7. Vercel Build Command
-Updated to use frozen lockfile:
+Updated to use frozen lockfile and simplified filter syntax:
 ```json
-"buildCommand": "cd ../.. && pnpm install --frozen-lockfile && pnpm build --filter=web"
+"buildCommand": "cd ../.. && pnpm install --frozen-lockfile && pnpm --filter=web build"
+```
+
+### 8. pnpm Public Hoisting
+Updated `.npmrc` to ensure all packages are hoisted:
+```
+public-hoist-pattern[]=*
 ```
 
 ## Troubleshooting
