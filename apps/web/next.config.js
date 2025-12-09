@@ -26,6 +26,14 @@ const nextConfig = {
   
   // Webpack configuration for better module resolution
   webpack: (config, { isServer }) => {
+    const path = require('path');
+    
+    // Add explicit alias for @ path
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname, 'src'),
+    };
+    
     // Ensure proper module resolution
     config.resolve.extensionAlias = {
       '.js': ['.ts', '.tsx', '.js', '.jsx'],
