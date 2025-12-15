@@ -29,5 +29,11 @@
     "node": ">=18.0.0",
     "pnpm": ">=9.0.0"
   },
-  "packageManager": "pnpm@9.15.4"
+  "packageManager": "pnpm@9.15.4",
+  "pnpm": {
+    "overrides": {
+      "esbuild@<=0.24.2": ">=0.25.0",
+      "next@>=15.5.1-canary.0 <15.5.8": ">=15.5.8"
+    }
+  }
 }
